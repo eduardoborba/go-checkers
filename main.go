@@ -18,7 +18,7 @@ type Checkers struct {
 
 func main() {
 	var checkers Checkers = Checkers{
-		board: [8][8]Square{
+		[8][8]Square{
 			{
 				Square{false, ""}, Square{true, "Black"}, Square{false, ""},
 				Square{true, "Black"}, Square{false, ""}, Square{true, "Black"},
@@ -60,7 +60,7 @@ func main() {
 				Square{true, "White"}, Square{false, ""},
 			},
 		},
-		turn: "White",
+		"White",
 	}
 
 	for checkers.gameNotFinished() {
@@ -137,9 +137,25 @@ func readMove(c Checkers) {
 	from := c.board[from_row][from_column]
 	to := c.board[to_row][to_column]
 
-	fmt.Println(from_row, from_column, from.value)
-	fmt.Println(to_row, to_column, to.value)
 	if !from.usable || !to.usable {
-		print("Not valid")
+		print("Not valid: not usable square")
+	}
+
+	if from.value == "" {
+		print("Not valid: must select a piece")
+	} else if from.value != c.turn {
+		print("Not valid: not your turn")
+	}
+
+	if to.value != "" {
+		print("Not valid: destination is not empty")
+	}
+
+	if c.turn == "Black" {
+		if from_row == to_row+1 && (from_column == to_column+1 || from_column == to_column-1) {
+			print("Valid")
+		} else {
+			print("Not valid: invalid move")
+		}
 	}
 }
