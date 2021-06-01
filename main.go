@@ -1,40 +1,82 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
 )
 
-var Board = [8][8]string{
-	{"-", "B", "-", "B", "-", "B", "-", "B"},
-	{"B", "-", "B", "-", "B", "-", "B", "-"},
-	{"-", "B", "-", "B", "-", "B", "-", "B"},
-	{"0", "-", "0", "-", "0", "-", "0", "-"},
-	{"-", "0", "-", "0", "-", "0", "-", "0"},
-	{"W", "-", "W", "-", "W", "-", "W", "-"},
-	{"-", "W", "-", "W", "-", "W", "-", "W"},
-	{"W", "-", "W", "-", "W", "-", "W", "-"},
+type Square struct {
+	usable bool
+	value  string
 }
 
-var Turn = "W"
+type Checkers struct {
+	board [8][8]Square
+	turn  string
+}
 
 func main() {
-	for gameNotFinished() {
-		printBoard()
+	var checkers Checkers = Checkers{
+		board: [8][8]Square{
+			{
+				Square{false, ""}, Square{true, "Black"}, Square{false, ""},
+				Square{true, "Black"}, Square{false, ""}, Square{true, "Black"},
+				Square{false, ""}, Square{true, "Black"},
+			},
+			{
+				Square{true, "Black"}, Square{false, ""}, Square{true, "Black"},
+				Square{false, ""}, Square{true, "Black"}, Square{false, ""},
+				Square{true, "Black"}, Square{false, ""},
+			},
+			{
+				Square{false, ""}, Square{true, "Black"}, Square{false, ""},
+				Square{true, "Black"}, Square{false, ""}, Square{true, "Black"},
+				Square{false, ""}, Square{true, "Black"},
+			},
+			{
+				Square{true, ""}, Square{false, ""}, Square{true, ""},
+				Square{false, ""}, Square{true, ""}, Square{false, ""},
+				Square{true, ""}, Square{false, ""},
+			},
+			{
+				Square{false, ""}, Square{true, ""}, Square{false, ""},
+				Square{true, ""}, Square{false, ""}, Square{true, ""},
+				Square{false, ""}, Square{true, ""},
+			},
+			{
+				Square{true, "White"}, Square{false, ""}, Square{true, "White"},
+				Square{false, ""}, Square{true, "White"}, Square{false, ""},
+				Square{true, "White"}, Square{false, ""},
+			},
+			{
+				Square{false, ""}, Square{true, "White"}, Square{false, ""},
+				Square{true, "White"}, Square{false, ""}, Square{true, "White"},
+				Square{false, ""}, Square{true, "White"},
+			},
+			{
+				Square{true, "White"}, Square{false, ""}, Square{true, "White"},
+				Square{false, ""}, Square{true, "White"}, Square{false, ""},
+				Square{true, "White"}, Square{false, ""},
+			},
+		},
+		turn: "White",
+	}
 
-		readMove()
+	for checkers.gameNotFinished() {
+		checkers.printBoard()
+
+		readMove(checkers)
 	}
 }
 
-func printBoard() {
+func (c Checkers) printBoard() {
 	clearTerminal()
 
 	fmt.Println(". _ . _ . _ . _ . _ . _ . _ . _ .")
-	for _, row := range Board {
-		for _, value := range row {
-			fmt.Print("| ", valueToPrint(value), " ")
+	for i := 0; i < 8; i += 1 {
+		for j := 0; j < 8; j += 1 {
+			fmt.Print("| ", valueToPrint(c.board[i][j]), " ")
 		}
 
 		fmt.Println("|")
@@ -48,27 +90,29 @@ func clearTerminal() {
 	c.Run()
 }
 
-func valueToPrint(value string) string {
-	value_to_print := value
+func valueToPrint(square Square) string {
+	value_to_print := square.value
 
-	if value == "-" || value == "0" {
+	if value_to_print == "" {
 		value_to_print = " "
+	} else {
+		value_to_print = value_to_print[0:1]
 	}
 
 	return value_to_print
 }
 
-func gameNotFinished() bool {
+func (c Checkers) gameNotFinished() bool {
 	has_black := false
 	has_white := false
 
-	for _, row := range Board {
-		for _, value := range row {
-			if value == "B" {
+	for i := 0; i < 8; i += 1 {
+		for j := 0; j < 8; j += 1 {
+			if c.board[i][j].value == "Black" {
 				has_black = true
 			}
 
-			if value == "W" {
+			if c.board[i][j].value == "White" {
 				has_white = true
 			}
 		}
@@ -77,16 +121,25 @@ func gameNotFinished() bool {
 	return has_black && has_white
 }
 
-func readMove() {
-	reader := bufio.NewReader(os.Stdin)
+func readMove(c Checkers) {
+	var from_row, from_column, to_row, to_column int
 
-	fmt.Print("Piece: ")
-	piece, _ := reader.ReadString('\n')
-	// piece = strings.Split(piece, " ")
-	// if Board[x][y] != Turn {
-	// 	return
-	// }
+	fmt.Print("From row: ")
+	fmt.Scanf("%d", &from_row)
+	fmt.Print("From column: ")
+	fmt.Scanf("%d", &from_column)
 
-	// fmt.Print("Move to: ")
-	// move_to, _ := reader.ReadString('\n')
+	fmt.Print("To row: ")
+	fmt.Scanf("%d", &to_row)
+	fmt.Print("To column: ")
+	fmt.Scanf("%d", &to_column)
+
+	from := c.board[from_row][from_column]
+	to := c.board[to_row][to_column]
+
+	fmt.Println(from_row, from_column, from.value)
+	fmt.Println(to_row, to_column, to.value)
+	if !from.usable || !to.usable {
+		print("Not valid")
+	}
 }
